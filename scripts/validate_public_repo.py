@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = "PUBLIC_SOURCE_SHA256SUMS"
 
 REQUIRED = {
+    ".github/workflows/release.yml",
     ".github/workflows/python-ci.yml",
     ".github/dependabot.yml",
     ".gitattributes",
@@ -42,11 +43,15 @@ REQUIRED = {
 
 FORBIDDEN_TOP_LEVEL = {
     "article",
+    "build",
     "dist",
     "final_validation",
+    "htmlcov",
     "r",
+    "site",
     "submission",
     "visual_checks",
+    "_build",
 }
 
 FORBIDDEN_EXACT = {
@@ -98,12 +103,18 @@ ALLOWED_NOTEBOOK_FILES = {
 }
 
 CACHE_PARTS = {
+    ".nox",
     "__pycache__",
     ".pytest_cache",
     ".ruff_cache",
     ".mypy_cache",
+    ".tox",
+    ".venv",
     ".ipynb_checkpoints",
+    "venv",
 }
+
+BUILD_METADATA_SUFFIXES = (".dist-info", ".egg-info")
 
 ARCHIVE_SUFFIXES = (".zip", ".whl", ".tar.gz", ".sha256")
 UNSUPPORTED_LANGUAGE_SUFFIXES = {".r", ".rd", ".rmd"}
@@ -276,6 +287,8 @@ def validate() -> dict[str, object]:
             errors.append(f"non-public path name present: {item}")
         if any(part in CACHE_PARTS for part in parts):
             errors.append(f"cache path present: {item}")
+        if any(part.endswith(BUILD_METADATA_SUFFIXES) for part in parts):
+            errors.append(f"build metadata path present: {item}")
         if path.suffix.casefold() in UNSUPPORTED_LANGUAGE_SUFFIXES:
             errors.append(f"unsupported language source present: {item}")
         if parts and parts[0] == "notebooks" and item not in ALLOWED_NOTEBOOK_FILES:

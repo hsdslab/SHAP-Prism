@@ -1,0 +1,196 @@
+name: Publish release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Validate and build release artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Verify release tag and source branch
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          import re
+          import tomllib
+
+          tag = os.environ["RELEASE_TAG"]
+          if re.fullmatch(r"v\d+\.\d+\.\d+", tag) is None:
+              raise SystemExit(f"invalid release tag: {tag!r}")
+
+          with Path("pyproject.toml").open("rb") as stream:
+              version = tomllib.load(stream)["project"]["version"]
+          if tag != f"v{version}":
+              raise SystemExit(
+                  f"release tag {tag!r} does not match project version {version!r}"
+              )
+
+          version_source = Path("src/shap_prism/_version.py").read_text(
+              encoding="utf-8"
+          )
+          if f'__version__ = "{version}"' not in version_source:
+              raise SystemExit("package version source does not match pyproject.toml")
+
+          citation = Path("CITATION.cff").read_text(encoding="utf-8")
+          if re.search(rf"(?m)^version:\s*['\"]?{re.escape(version)}['\"]?\s*$", citation) is None:
+              raise SystemExit("CITATION.cff version does not match pyproject.toml")
+
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          changelog_heading = re.search(
+              rf"(?m)^## {re.escape(version)} — (\d{{4}}-\d{{2}}-\d{{2}})$",
+              changelog,
+          )
+          if changelog_heading is None:
+              raise SystemExit("CHANGELOG.md has no dated heading for the release")
+          citation_date = re.search(
+              r"(?m)^date-released:\s*['\"]?(\d{4}-\d{2}-\d{2})['\"]?\s*$",
+              citation,
+          )
+          if citation_date is None:
+              raise SystemExit("CITATION.cff has no valid release date")
+          if citation_date.group(1) != changelog_heading.group(1):
+              raise SystemExit("release dates differ between CITATION.cff and CHANGELOG.md")
+          PY
+          test "$(git rev-parse HEAD)" = "$(git rev-parse refs/remotes/origin/main)"
+      - run: python scripts/validate_public_repo.py
+      - run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-verified.txt
+          python -m pip install --no-deps -e .
+          python -m pip check
+          python -m unittest discover -s tests -v
+        env:
+          MPLBACKEND: Agg
+          MPLCONFIGDIR: ${{ runner.temp }}/matplotlib
+          PYTHONDONTWRITEBYTECODE: "1"
+      - run: python -m pip install --upgrade build twine
+      - run: python -m build
+      - run: python -m twine check --strict dist/*
+      - name: Record distribution hashes
+        run: sha256sum dist/*
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-distributions
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/shap-prism/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-distributions
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  smoke-test-testpypi:
+    name: Install and render from TestPyPI
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions: {}
+    steps:
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install the uploaded wheel
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python -m venv .venv-testpypi
+          .venv-testpypi/bin/python -m pip install --upgrade pip
+          .venv-testpypi/bin/python -m pip install \
+            "matplotlib>=3.8" "numpy>=1.26" "pandas>=2.0" \
+            "pillow>=10,<13" "pypdf>=5,<7"
+          version="${RELEASE_TAG#v}"
+          for attempt in 1 2 3 4 5 6 7 8; do
+            if .venv-testpypi/bin/python -m pip install \
+              --index-url https://test.pypi.org/simple/ \
+              --no-deps "shap-prism==${version}"; then
+              break
+            fi
+            if [ "${attempt}" = "8" ]; then
+              exit 1
+            fi
+            sleep 15
+          done
+      - name: Render with the TestPyPI installation
+        env:
+          MPLBACKEND: Agg
+          MPLCONFIGDIR: ${{ runner.temp }}/matplotlib
+          PYTHONDONTWRITEBYTECODE: "1"
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          .venv-testpypi/bin/python - <<'PY'
+          import os
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+
+          import matplotlib.pyplot as plt
+          import numpy as np
+          import pandas as pd
+          import shap_prism
+
+          expected_version = os.environ["RELEASE_TAG"].removeprefix("v")
+          assert shap_prism.__version__ == expected_version
+          values = np.array([[0.2, -0.1], [-0.3, 0.2], [0.1, 0.0], [0.0, -0.2]])
+          features = pd.DataFrame(
+              {"numeric": [1.0, 2.0, 3.0, 4.0], "category": ["A", "B", "A", "B"]}
+          )
+          with TemporaryDirectory() as directory:
+              stem = Path(directory) / "testpypi-smoke"
+              result = shap_prism.plot_summary(values, features, output=stem)
+              assert stem.with_suffix(".png").is_file()
+              assert stem.with_suffix(".pdf").is_file()
+              plt.close(result.figure)
+          PY
+          .venv-testpypi/bin/python -m pip check
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: smoke-test-testpypi
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: pypi
+      url: https://pypi.org/project/shap-prism/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-distributions
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
