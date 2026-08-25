@@ -45,7 +45,8 @@ tests.
 
 The [fully synthetic quick-start notebook](https://github.com/hsdslab/SHAP-Prism/blob/main/notebooks/shap_prism_quickstart.ipynb)
 starts with `!pip install shap-prism`, then demonstrates `plot_summary` and
-`plot_prism` with one small, self-contained example.
+`plot_prism` by recreating the graphical abstract's synthetic delivery
+scenario entirely in memory.
 
 ## Quick start
 

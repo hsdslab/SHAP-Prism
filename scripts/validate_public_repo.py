@@ -212,6 +212,24 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
     metadata = notebook.get("metadata", {}).get("shap_prism", {})
     if metadata.get("data_scope") != "fully synthetic; generated in notebook":
         errors.append("public notebook does not declare the required synthetic scope")
+    if metadata.get("scenario") != "graphical abstract synthetic delivery example":
+        errors.append(
+            "public notebook does not declare the graphical-abstract scenario"
+        )
+    expected_specification = {
+        "feature_order": [
+            "Route distance",
+            "Delivery mode",
+            "Traffic index",
+            "Heavy rain",
+            "Drop-off type",
+        ],
+        "group_mean_delivery_mode_shap": [-0.3, -0.2, 0.1, 0.25],
+        "route_distance_band_counts": [120, 96, 72, 54],
+        "rows": 342,
+    }
+    if metadata.get("specification") != expected_specification:
+        errors.append("public notebook graphical-abstract specification is incomplete")
     cells = notebook.get("cells", [])
     code_cells = [cell for cell in cells if cell.get("cell_type") == "code"]
     if metadata.get("install_command") != "!pip install shap-prism":
@@ -243,6 +261,20 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
         errors.append("public notebook contains an external data-loading call")
     if "plot_summary(" not in code or "plot_prism(" not in code:
         errors.append("public notebook does not demonstrate both plotting functions")
+    graphical_abstract_terms = (
+        "Route distance",
+        "Delivery mode",
+        "Traffic index",
+        "Heavy rain",
+        "Drop-off type",
+        "Cargo bike",
+        "Parcel locker",
+        "Route-distance band",
+    )
+    if any(term not in code for term in graphical_abstract_terms):
+        errors.append(
+            "public notebook does not implement the declared delivery scenario"
+        )
     forbidden_bootstrap = ("subprocess", "sys.path", "find_source_checkout")
     if any(token in code for token in forbidden_bootstrap):
         errors.append("public notebook contains repository bootstrap machinery")
