@@ -215,6 +215,29 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
     if metadata.get("data_scope") != "fully synthetic; generated in notebook":
         errors.append("public notebook does not declare the required synthetic scope")
     cells = notebook.get("cells", [])
+    code_cells = [cell for cell in cells if cell.get("cell_type") == "code"]
+    if metadata.get("expected_version") != "0.4.4":
+        errors.append("public notebook does not pin the expected package version")
+    if metadata.get("install_index") != "https://pypi.org/simple":
+        errors.append("public notebook does not declare the official PyPI index")
+    if metadata.get("install_requirement") != "shap-prism==0.4.4":
+        errors.append("public notebook does not declare the pinned PyPI requirement")
+    if not code_cells:
+        errors.append("public notebook contains no code cells")
+    else:
+        first_code = code_cells[0].get("source", [])
+        bootstrap = (
+            "".join(first_code) if isinstance(first_code, list) else str(first_code)
+        )
+        required_bootstrap_fragments = (
+            'EXPECTED_VERSION = "0.4.4"',
+            '"pip",',
+            'f"shap-prism=={EXPECTED_VERSION}"',
+            '"https://pypi.org/simple"',
+            "SOURCE_ROOT is None",
+        )
+        if any(fragment not in bootstrap for fragment in required_bootstrap_fragments):
+            errors.append("public notebook lacks the pinned PyPI/Colab bootstrap")
     code = "\n".join(
         "".join(cell.get("source", []))
         if isinstance(cell.get("source"), list)
@@ -257,8 +280,7 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
         errors.append("public notebook contains an unsupported language claim")
     if not any(
         cell.get("execution_count") is not None
-        for cell in cells
-        if cell.get("cell_type") == "code"
+        for cell in code_cells
     ):
         errors.append("public notebook is not executed")
     return errors

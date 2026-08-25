@@ -48,9 +48,64 @@ def _notebook() -> dict[str, Any]:
             """
 # SHAP Prism: fully synthetic quick start
 
-This notebook generates its feature matrix and additive contribution matrix in
+Run this notebook directly in Google Colab or from a SHAP Prism source
+checkout. In Colab, the first code cell installs exactly `shap-prism==0.4.4`
+from PyPI. In a source checkout, it uses the checked-out package instead.
+
+The notebook generates its feature matrix and additive contribution matrix in
 memory. It downloads, reads, or redistributes no empirical data. The example
 shows both the categorical-aware global summary and the subgroup Prism view.
+"""
+        ),
+        _code(
+            """
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+EXPECTED_VERSION = "0.4.4"
+
+if sys.version_info < (3, 12):
+    raise RuntimeError("SHAP Prism 0.4.4 requires Python 3.12 or newer.")
+
+
+def find_source_checkout(start: Path) -> Path | None:
+    for candidate in (start, *start.parents):
+        if (candidate / "pyproject.toml").is_file() and (
+            candidate / "src/shap_prism"
+        ).is_dir():
+            return candidate
+    return None
+
+
+SOURCE_ROOT = find_source_checkout(Path.cwd().resolve())
+if SOURCE_ROOT is None:
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--quiet",
+            "--disable-pip-version-check",
+            "--no-cache-dir",
+            "--index-url",
+            "https://pypi.org/simple",
+            f"shap-prism=={EXPECTED_VERSION}",
+        ],
+        check=True,
+    )
+    INSTALL_SOURCE = "PyPI"
+    OUTPUT_DIR = Path("shap_prism_output")
+else:
+    os.chdir(SOURCE_ROOT)
+    sys.path.insert(0, str(SOURCE_ROOT / "src"))
+    INSTALL_SOURCE = "repository checkout"
+    OUTPUT_DIR = Path("notebooks/output")
+
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+print(f"Environment ready: {INSTALL_SOURCE}")
 """
         ),
         _markdown(
@@ -71,9 +126,6 @@ categorical key.
         _code(
             """
 import json
-import os
-from pathlib import Path
-import sys
 import tempfile
 
 os.environ["SOURCE_DATE_EPOCH"] = "1784332800"
@@ -86,21 +138,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
-def find_repository_root(start: Path) -> Path:
-    for candidate in (start, *start.parents):
-        if (candidate / "pyproject.toml").is_file() and (
-            candidate / "src/shap_prism"
-        ).is_dir():
-            return candidate
-    raise FileNotFoundError("Run this notebook from within the release repository.")
-
-
-ROOT = find_repository_root(Path.cwd().resolve())
-os.chdir(ROOT)
-sys.path.insert(0, str(ROOT / "src"))
-
 from shap_prism import __version__, plot_prism, plot_summary
+
+assert __version__ == EXPECTED_VERSION
 
 RANDOM_STATE = 4701
 rng = np.random.default_rng(RANDOM_STATE)
@@ -162,9 +202,6 @@ assert features.index.equals(shap_values.index)
 assert features.columns.equals(shap_values.columns)
 assert np.isfinite(shap_values.to_numpy(float)).all()
 assert np.allclose(baseline + shap_values.sum(axis=1), synthetic_output)
-
-OUTPUT_DIR = Path("notebooks/output")
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 print(f"shap-prism {__version__}")
 print(f"synthetic feature and contribution matrices: {features.shape}")
@@ -306,6 +343,7 @@ model output before using SHAP Prism in an empirical analysis.
     ]
     cell_ids = [
         "title",
+        "environment-setup",
         "synthetic-scope",
         "build-synthetic-inputs",
         "summary-intro",
@@ -330,6 +368,9 @@ model output before using SHAP Prism in an empirical analysis.
             "shap_prism": {
                 "builder": "notebooks/build_shap_prism_quickstart.py",
                 "data_scope": "fully synthetic; generated in notebook",
+                "expected_version": "0.4.4",
+                "install_index": "https://pypi.org/simple",
+                "install_requirement": "shap-prism==0.4.4",
                 "random_state": 4701,
             },
         },

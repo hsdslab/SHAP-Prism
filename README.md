@@ -22,7 +22,13 @@ or perform causal or fairness inference.
 
 ## Install
 
-From a source checkout, install the package in editable mode:
+Install the published release from PyPI:
+
+```bash
+python -m pip install "shap-prism==0.4.4"
+```
+
+For development from a source checkout, use editable mode instead:
 
 ```bash
 python -m pip install -e .
@@ -35,10 +41,13 @@ explanations that have already been computed. No empirical data or explanation
 table is bundled; deterministic synthetic values drive the quick start and
 tests.
 
-The executed [fully synthetic quick-start notebook](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/notebooks/shap_prism_quickstart.ipynb)
-generates its feature and contribution matrices in memory, demonstrates both
-plotting functions, and includes a ten-level categorical row rendered as seven
-raw levels plus pooled `Others` under the documented frequency-and-tie rule.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hsdslab/SHAP-Prism/blob/main/notebooks/shap_prism_quickstart.ipynb)
+
+The executed [fully synthetic quick-start notebook](https://github.com/hsdslab/SHAP-Prism/blob/main/notebooks/shap_prism_quickstart.ipynb)
+installs the pinned PyPI release when opened in Colab, generates its feature
+and contribution matrices in memory, demonstrates both plotting functions,
+and includes a ten-level categorical row rendered as seven raw levels plus
+pooled `Others` under the documented frequency-and-tie rule.
 
 ## Quick start
 
