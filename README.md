@@ -43,11 +43,9 @@ tests.
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/hsdslab/SHAP-Prism/blob/main/notebooks/shap_prism_quickstart.ipynb)
 
-The executed [fully synthetic quick-start notebook](https://github.com/hsdslab/SHAP-Prism/blob/main/notebooks/shap_prism_quickstart.ipynb)
-installs the pinned PyPI release when opened in Colab, generates its feature
-and contribution matrices in memory, demonstrates both plotting functions,
-and includes a ten-level categorical row rendered as seven raw levels plus
-pooled `Others` under the documented frequency-and-tie rule.
+The [fully synthetic quick-start notebook](https://github.com/hsdslab/SHAP-Prism/blob/main/notebooks/shap_prism_quickstart.ipynb)
+starts with `!pip install shap-prism`, then demonstrates `plot_summary` and
+`plot_prism` with one small, self-contained example.
 
 ## Quick start
 

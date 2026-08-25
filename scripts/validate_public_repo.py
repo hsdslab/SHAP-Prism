@@ -29,7 +29,6 @@ REQUIRED = {
     "LICENSE",
     "LICENSE_SCOPE.md",
     "MANIFEST.in",
-    "notebooks/build_shap_prism_quickstart.py",
     "notebooks/shap_prism_quickstart.ipynb",
     "PUBLIC_SOURCE_SHA256SUMS",
     "README.md",
@@ -98,7 +97,6 @@ FORBIDDEN_EMPIRICAL_DIRS = {
     ("reproduction", "generated"),
 }
 ALLOWED_NOTEBOOK_FILES = {
-    "notebooks/build_shap_prism_quickstart.py",
     "notebooks/shap_prism_quickstart.ipynb",
 }
 
@@ -216,28 +214,17 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
         errors.append("public notebook does not declare the required synthetic scope")
     cells = notebook.get("cells", [])
     code_cells = [cell for cell in cells if cell.get("cell_type") == "code"]
-    if metadata.get("expected_version") != "0.4.4":
-        errors.append("public notebook does not pin the expected package version")
-    if metadata.get("install_index") != "https://pypi.org/simple":
-        errors.append("public notebook does not declare the official PyPI index")
-    if metadata.get("install_requirement") != "shap-prism==0.4.4":
-        errors.append("public notebook does not declare the pinned PyPI requirement")
+    if metadata.get("install_command") != "!pip install shap-prism":
+        errors.append("public notebook does not declare the simple PyPI install command")
     if not code_cells:
         errors.append("public notebook contains no code cells")
     else:
         first_code = code_cells[0].get("source", [])
-        bootstrap = (
+        install_cell = (
             "".join(first_code) if isinstance(first_code, list) else str(first_code)
         )
-        required_bootstrap_fragments = (
-            'EXPECTED_VERSION = "0.4.4"',
-            '"pip",',
-            'f"shap-prism=={EXPECTED_VERSION}"',
-            '"https://pypi.org/simple"',
-            "SOURCE_ROOT is None",
-        )
-        if any(fragment not in bootstrap for fragment in required_bootstrap_fragments):
-            errors.append("public notebook lacks the pinned PyPI/Colab bootstrap")
+        if install_cell.strip() != "!pip install shap-prism":
+            errors.append("public notebook does not start with !pip install shap-prism")
     code = "\n".join(
         "".join(cell.get("source", []))
         if isinstance(cell.get("source"), list)
@@ -254,6 +241,11 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
     )
     if any(token in code for token in forbidden_loaders):
         errors.append("public notebook contains an external data-loading call")
+    if "plot_summary(" not in code or "plot_prism(" not in code:
+        errors.append("public notebook does not demonstrate both plotting functions")
+    forbidden_bootstrap = ("subprocess", "sys.path", "find_source_checkout")
+    if any(token in code for token in forbidden_bootstrap):
+        errors.append("public notebook contains repository bootstrap machinery")
     source_text = "\n".join(
         "".join(cell.get("source", []))
         if isinstance(cell.get("source"), list)
@@ -278,11 +270,11 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
         errors.append("public notebook contains internal provenance wording")
     if UNSUPPORTED_LANGUAGE_CLAIM_PATTERN.search(decoded_text):
         errors.append("public notebook contains an unsupported language claim")
-    if not any(
-        cell.get("execution_count") is not None
+    if any(
+        cell.get("execution_count") is not None or cell.get("outputs")
         for cell in code_cells
     ):
-        errors.append("public notebook is not executed")
+        errors.append("public notebook contains committed execution output")
     return errors
 
 
