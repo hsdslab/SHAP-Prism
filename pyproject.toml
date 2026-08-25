@@ -50,7 +50,7 @@ Changelog = "https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/CHANGELOG.md"
 [project.optional-dependencies]
 reproduction = [
   "scikit-learn>=1.5",
-  "shap>=0.47,<0.51",
+  "shap>=0.47,<0.53",
 ]
 dev = [
   "build>=1.2",
