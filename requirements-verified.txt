@@ -1,0 +1,6 @@
+# Environment used for the released rendering and core release verification.
+matplotlib==3.10.8
+numpy==2.3.5
+pandas==2.2.3
+pillow==12.2.0
+pypdf==6.10.0

@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use SHAP Prism, please cite this software release."
+title: "SHAP Prism"
+type: software
+url: "https://github.com/hsdslab/SHAP-Prism"
+repository-code: "https://github.com/hsdslab/SHAP-Prism"
+version: 0.4.4
+date-released: 2026-08-18
+license: MIT
+authors:
+  - family-names: Pintér
+    given-names: József
+    email: pinterj@math.bme.hu
+    orcid: "https://orcid.org/0000-0001-9068-3295"
+  - family-names: Sibón Muñoz
+    given-names: Servando
+keywords:
+  - SHAP
+  - explainable machine learning
+  - categorical features
+  - subgroup analysis
+  - visualization

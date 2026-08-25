@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shap-prism"
+version = "0.4.4"
+description = "Categorical-aware global and subgroup visualizations for precomputed SHAP explanations"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "József Pintér" },
+  { name = "Servando Sibón Muñoz" },
+]
+maintainers = [
+  { name = "József Pintér", email = "pinterj@math.bme.hu" },
+]
+keywords = [
+  "SHAP",
+  "explainable machine learning",
+  "categorical features",
+  "subgroup analysis",
+  "visualization",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Typing :: Typed",
+]
+dependencies = [
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+  "pandas>=2.0",
+  "pillow>=10,<13",
+  "pypdf>=5,<7",
+]
+
+[project.urls]
+Homepage = "https://github.com/hsdslab/SHAP-Prism"
+Repository = "https://github.com/hsdslab/SHAP-Prism"
+Issues = "https://github.com/hsdslab/SHAP-Prism/issues"
+Changelog = "https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/CHANGELOG.md"
+
+[project.optional-dependencies]
+reproduction = [
+  "scikit-learn>=1.5",
+  "shap>=0.47,<0.51",
+]
+dev = [
+  "build>=1.2",
+  "twine>=5.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+shap_prism = ["py.typed"]
