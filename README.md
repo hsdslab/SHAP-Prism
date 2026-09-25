@@ -18,14 +18,14 @@ SHAP matrix aligned row-for-row and column-for-column with the supplied feature
 table. The package does not fit models, compute SHAP values, choose subgroups,
 or perform causal or fairness inference.
 
-![Standard SHAP summary with continuous blue-purple-pink dots and gray categorical rows; SHAP Prism reorganizes the same SHAP values into categorical keys and shared-scale subgroup distributions.](https://raw.githubusercontent.com/hsdslab/SHAP-Prism/v0.4.4/docs/shap_prism_readme_overview.png)
+![SHAP Prism graphical abstract: the machine-learning workflow, a standard SHAP summary, and categorical-aware global and subgroup views of the same SHAP values.](https://raw.githubusercontent.com/hsdslab/SHAP-Prism/v0.4.5/docs/shap_prism_readme_overview.png)
 
 ## Install
 
 Install the published release from PyPI:
 
 ```bash
-python -m pip install "shap-prism==0.4.4"
+python -m pip install "shap-prism==0.4.5"
 ```
 
 For development from a source checkout, use editable mode instead:
@@ -34,8 +34,9 @@ For development from a source checkout, use editable mode instead:
 python -m pip install -e .
 ```
 
-Version 0.4.4 is verified on Python 3.12 with both the pinned publication stack
-and the latest dependency versions permitted by `pyproject.toml`. SHAP itself
+SHAP Prism requires Python 3.12 or later. Continuous integration tests both
+the pinned publication stack and the latest dependency versions permitted by
+`pyproject.toml`. SHAP itself
 is not a runtime dependency because the plotting functions consume
 explanations that have already been computed. No empirical data or explanation
 table is bundled; deterministic synthetic values drive the quick start and
@@ -289,7 +290,7 @@ python -m pip install ".[reproduction]"
 python examples/palmer_penguins_global_categories.py --help
 ```
 
-See [`ARTICLE_DATA_ACQUISITION.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/ARTICLE_DATA_ACQUISITION.md) for official
+See [`ARTICLE_DATA_ACQUISITION.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/ARTICLE_DATA_ACQUISITION.md) for official
 source links, external schemas, and the no-redistribution boundary. The
 repository does not claim one-command empirical article reproduction.
 
@@ -300,12 +301,12 @@ journal-size PNG/PDF output.
 
 The repository also contains:
 
-- [`DEVELOPMENT.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/DEVELOPMENT.md): local development and verification;
-- [`COMPATIBILITY.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/COMPATIBILITY.md): verified environment;
-- [`DATA_LICENSES.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/DATA_LICENSES.md): the data-free release boundary;
-- [`ARTICLE_DATA_ACQUISITION.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/ARTICLE_DATA_ACQUISITION.md): external article
+- [`DEVELOPMENT.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/DEVELOPMENT.md): local development and verification;
+- [`COMPATIBILITY.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/COMPATIBILITY.md): verified environment;
+- [`DATA_LICENSES.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/DATA_LICENSES.md): the data-free release boundary;
+- [`ARTICLE_DATA_ACQUISITION.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/ARTICLE_DATA_ACQUISITION.md): external article
   inputs and official source locations;
-- [`LICENSE_SCOPE.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/LICENSE_SCOPE.md): exact software, data, and third-party
+- [`LICENSE_SCOPE.md`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/LICENSE_SCOPE.md): exact software, data, and third-party
   licensing boundaries.
 
 ### Encoded columns
@@ -331,7 +332,7 @@ Owen value of the unencoded feature. Record the column mapping.
 
 ## Citation and license
 
-Use [`CITATION.cff`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/CITATION.cff) for the current software citation. The original Python
+Use [`CITATION.cff`](https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/CITATION.cff) for the current software citation. The original Python
 source, examples, tests, and project documentation are MIT-licensed, with
 copyright held jointly by József Pintér and Servando Sibón Muñoz. Third-party
 and data boundaries are stated in `LICENSE_SCOPE.md` and

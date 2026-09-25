@@ -83,7 +83,7 @@ jobs:
           import pandas as pd
           import shap_prism
 
-          assert shap_prism.__version__ == "0.4.4"
+          assert shap_prism.__version__ == "0.4.5"
           values = np.array([[0.2, -0.1], [-0.3, 0.2], [0.1, 0.0], [0.0, -0.2]])
           features = pd.DataFrame(
               {"numeric": [1.0, 2.0, 3.0, 4.0], "category": ["A", "B", "A", "B"]}
@@ -110,7 +110,7 @@ jobs:
           import pandas as pd
           import shap_prism
 
-          assert shap_prism.__version__ == "0.4.4"
+          assert shap_prism.__version__ == "0.4.5"
           values = np.array([[0.2, -0.1], [-0.3, 0.2], [0.1, 0.0], [0.0, -0.2]])
           features = pd.DataFrame(
               {"numeric": [1.0, 2.0, 3.0, 4.0], "category": ["A", "B", "A", "B"]}

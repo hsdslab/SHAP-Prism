@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.5 — 2026-09-25
+
+### Changed
+
+- Replaced the README overview with the normal-size graphical abstract,
+  including the machine-learning workflow, for GitHub and PyPI.
+- Updated the visual builder to export the supplied single-page PDF without
+  changing its labels; the enlarged variant is rejected.
+- Excluded the local `private/` workspace from Git, source distributions, and
+  public checksum generation. Release validation rejects tracked files there.
+
 ## 0.4.4 — 2026-08-25
 
 ### Changed

@@ -40,6 +40,13 @@ PNG/PDF smoke render before publishing.
 
 ## Release discipline
 
+- Keep local source artwork in the ignored `private/` folder. Only the approved
+  PNG export belongs in `docs/`; the source folder is also excluded from source
+  distributions and public checksums, and validation rejects tracked files there.
+- Rebuild the README image from the normal graphical abstract with
+  `python scripts/build_readme_visual.py --source-pdf private/SHAP_Prism_graphical_abstract.pdf`.
+  This documentation-only command requires PyMuPDF. Inspect the resulting PNG
+  before updating the release-pinned README image URL.
 - Do not commit `dist/`, build outputs, caches, credentials, or files unrelated
   to the software repository.
 - Do not commit raw, processed, derived, prediction, or explanation data.

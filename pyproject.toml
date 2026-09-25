@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shap-prism"
-version = "0.4.4"
+version = "0.4.5"
 description = "Categorical-aware global and subgroup visualizations for precomputed SHAP explanations"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -45,7 +45,7 @@ dependencies = [
 Homepage = "https://github.com/hsdslab/SHAP-Prism"
 Repository = "https://github.com/hsdslab/SHAP-Prism"
 Issues = "https://github.com/hsdslab/SHAP-Prism/issues"
-Changelog = "https://github.com/hsdslab/SHAP-Prism/blob/v0.4.4/CHANGELOG.md"
+Changelog = "https://github.com/hsdslab/SHAP-Prism/blob/v0.4.5/CHANGELOG.md"
 
 [project.optional-dependencies]
 reproduction = [

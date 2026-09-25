@@ -8,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 import tomllib
 
 
@@ -181,11 +182,15 @@ TEXT_SCAN_SUFFIX_EXCLUSIONS = {".csv", ".ipynb", ".png", ".svg"}
 
 
 def _files() -> list[Path]:
-    return sorted(
-        path
-        for path in ROOT.rglob("*")
-        if path.is_file() and ".git" not in path.relative_to(ROOT).parts
-    )
+    files: list[Path] = []
+    for directory, subdirectories, filenames in ROOT.walk():
+        subdirectories[:] = [
+            name for name in subdirectories
+            if name != ".git"
+            and not (directory == ROOT and name == "private")
+        ]
+        files.extend(directory / name for name in filenames)
+    return sorted(files)
 
 
 def _sha256(path: Path) -> str:
@@ -312,6 +317,18 @@ def _validate_synthetic_notebook(path: Path) -> list[str]:
 
 def validate() -> dict[str, object]:
     errors: list[str] = []
+    if (ROOT / ".git").exists():
+        tracked_private = subprocess.run(
+            [
+                "git", "-c", f"safe.directory={ROOT.as_posix()}",
+                "-C", str(ROOT), "ls-files", "--", "private",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        if tracked_private.stdout.strip():
+            errors.append("local-only folder is tracked by Git")
     files = _files()
     relative = [path.relative_to(ROOT).as_posix() for path in files]
     relative_set = set(relative)
@@ -372,8 +389,8 @@ def validate() -> dict[str, object]:
     with (ROOT / "pyproject.toml").open("rb") as stream:
         python_version = tomllib.load(stream)["project"]["version"]
     runtime = (ROOT / "src/shap_prism/_version.py").read_text(encoding="utf-8")
-    if python_version != "0.4.4" or '__version__ = "0.4.4"' not in runtime:
-        errors.append("Python version is not consistently 0.4.4")
+    if python_version != "0.4.5" or '__version__ = "0.4.5"' not in runtime:
+        errors.append("Python version is not consistently 0.4.5")
 
     manifest_path = ROOT / MANIFEST
     if manifest_path.is_file():
